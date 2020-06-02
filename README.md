@@ -14,6 +14,6 @@
 --output               File output                                       
 
 Examples
-> o4f -u https://site.com/*F* -w ~/wordlist.txt -m GET -l 20 -o ~/out.txt
+> all4fuzz -u https://site.com/*F* -w ~/wordlist.txt -m GET -l 20 -o ~/out.txt
 
-> o4f -u https://site.com/api/v1/*F* -w ~/wordlist.txt -m POST -l 100 -R -e "Not Found"
+> all4fuzz -u https://site.com/api/v1/*F* -w ~/wordlist.txt -m POST -l 100 -R -e "Not Found"
