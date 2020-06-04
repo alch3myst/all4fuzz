@@ -221,6 +221,6 @@ except KeyboardInterrupt:
     print('\n\nCTRL+C huummm\n')
     sys.exit(1)
 except:
-    print('Last Index: ' + '[' + str(i) + '/' + str(wordlist_length) + '] ' + url.replace('*F*', param) + ' '*10 + '\r')
+    print('Last Index: ' + '[' + str(i) + '/' + str(wordlist_length) + '] ' + url + ' '*10 + '\r')
     print("Some other error")
     sys.exit(9)
