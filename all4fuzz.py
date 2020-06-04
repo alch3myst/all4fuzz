@@ -16,7 +16,7 @@ _limit = 10  # default rps
 _limit_per_host = 0  # default conections per host 0 = unlimited
 data = ''  # default data, sintax '{"parameter": *F*}'
 HEADERS = {}
-err_message = '*´adfuzz love u :D´*'  # error displayed in request [wip]
+err_message = '*all4fuzz love u :D´*'  # error displayed in request [wip]
 print_request = False  # print the request body, userfull for api fuzzing
 _status = 404  # Default request filter
 start_index = 0  # the wordlist start index
@@ -168,10 +168,9 @@ async def api(param):
 
     # Catch connection erros, ssl errors etc...
     except aiohttp.ClientConnectionError:
-        # print('Connection Error')
         pass
     except UnicodeError as e:
-        print(template.format('! URL: ', url.replace('*F*', param)))
+        print('Last Index: ' + '[' + str(i) + '/' + str(wordlist_length) + '] ' + url.replace('*F*', param) + ' '*10 + '\r')
         print(' Unicode error: label empty or too long')
         pass
     # Catch any other exception and print it
@@ -183,15 +182,14 @@ async def api(param):
 
 # Starter
 try:
-    print(output)
     # Banner & info
     banner.printBanner()
     template = "{0:5}{1:40}{2:5}"
     # Table info
     print('\nTotal atempts: ' + str(wordlist_length)+'\n')
-    print('-'*60)
-    print(template.format('| URL |', '', '| Status |'))
-    print('-'*60)
+    # print('-'*60)
+    # print(template.format('| URL |', '', '| Status |'))
+    # print('-'*60)
 
     # Progress count
     i = start_index
@@ -222,3 +220,7 @@ except KeyboardInterrupt:
     # Message for CRTL+C cancelation
     print('\n\nCTRL+C huummm\n')
     sys.exit(1)
+except:
+    print('Last Index: ' + '[' + str(i) + '/' + str(wordlist_length) + '] ' + url.replace('*F*', param) + ' '*10 + '\r')
+    print("Some other error")
+    sys.exit(9)
