@@ -5,6 +5,7 @@ import sys
 import util.helpers as h
 import util.banner as banner
 import getopt
+import json
 
 #
 # Don't look here it's ugly ;o
@@ -14,21 +15,21 @@ import getopt
 warnings.filterwarnings('ignore')  # R.I.P anoyng warnings
 _limit = 10  # default rps
 _limit_per_host = 0  # default conections per host 0 = unlimited
-data = ''  # default data, sintax '{"parameter": *F*}'
-HEADERS = {}
+data = ''  # sintax "{'parameter': *F*}"
+HEADERS = '' # sintax "{'header': 'name'}"
+COOKIES = '' # sintax "{'cookie': 'value'}"
 err_message = '*all4fuzz love u :D´*'  # error displayed in request [wip]
 print_request = False  # print the request body, userfull for api fuzzing
 _status = 404  # Default request filter
 start_index = 0  # the wordlist start index
 output = False
 
-
 # Args definition
 try:
     # Define options u, w, h
     options, remainder = getopt.gnu_getopt(
         sys.argv[1:],  # terminal arguments
-        'u:w:l:L:f:hm:de:Ri:',  # Shotr options
+        'u:w:l:L:f:hm:de:Ri:H:',  # Shotr options
         [  # Long arguments
             'url=',
             'wordlist=',
@@ -39,7 +40,9 @@ try:
             'data=',
             'error=',
             'start-index=',
-            'output='
+            'output=',
+            'headers=',
+            'cookies='
         ])
 # Catch errors from malformed input
 except getopt.GetoptError as err:
@@ -54,7 +57,11 @@ for opt, arg in options:
 
     # Define URL
     elif opt in ('-d', '--data'):
-        data = arg
+        data = json.loads(str(arg).replace("'", '"'))
+    
+    # Define URL
+    elif opt == '--cookies':
+        COOKIES = json.loads(str(arg).replace("'", '"'))
 
     # Request limit
     elif opt in ('-l', '--limit'):
@@ -78,6 +85,10 @@ for opt, arg in options:
     # Start index
     elif opt in ('-i', '--start-index'):
         start_index = int(arg)
+
+    # Start index
+    elif opt in ('-H', '--headers'):
+        HEADERS = json.loads(str(arg).replace("'", '"'))
 
     # Output file
     elif opt == '--output':
@@ -135,7 +146,7 @@ for opt, arg in options:
 async def api(param):
     try:
         # make the request
-        async with method(url.replace('*F*', param), data=data, headers=HEADERS) as res:
+        async with method(url.replace('*F*', param), data=data, headers=HEADERS, cookies=COOKIES) as res:
             # Count variable acess and increment
             global i
             i += 1
@@ -151,14 +162,14 @@ async def api(param):
 
             if res.status != _status and err_message not in r:
                 # print the requested url
-                print(template.format('# URL: ', url.replace('*F*', param), ' Status  ' + str(res.status)))
+                print(template.format('# URL ', url.replace('*F*', param), ' Status  ' + str(res.status)))
 
                 # if -R print the request body
                 print('- Response: ' + r + '  ') if print_request == True else False
 
                 # Open the output file
                 if output != False:
-                    out.write(template.format('# URL: ', url.replace('*F*', param), ' Status  ' + str(res.status))+'\n')
+                    out.write(template.format('# URL ', url.replace('*F*', param), ' Status  ' + str(res.status))+'\n')
                     out.write('- Response: ' + r + '  \n') if print_request == True else False
 
             # print the current request and keep it in line, a little bit buggy :l
@@ -221,6 +232,6 @@ except KeyboardInterrupt:
     print('\n\nCTRL+C huummm\n')
     sys.exit(1)
 except:
-    print('Last Index: ' + '[' + str(i) + '/' + str(wordlist_length) + '] ' + url.replace('*F*', param) + ' '*10 + '\r')
+    print('Last Index: ' + '[' + str(i) + '/' + str(wordlist_length) + '] ' + url + ' '*10 + '\r')
     print("Some other error")
     sys.exit(9)
