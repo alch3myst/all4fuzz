@@ -22,6 +22,7 @@ err_message = '*all4fuzz love u :D´*'  # error displayed in request [wip]
 print_request = False  # print the request body, userfull for api fuzzing
 _status = 404  # Default request filter
 start_index = 0  # the wordlist start index
+proxy = None  # the wordlist start index
 output = False
 
 # Args definition
@@ -29,7 +30,7 @@ try:
     # Define options u, w, h
     options, remainder = getopt.gnu_getopt(
         sys.argv[1:],  # terminal arguments
-        'u:w:l:L:f:hm:de:Ri:H:',  # Shotr options
+        'u:w:l:L:f:hm:de:Ri:H:p:c:',  # Shotr options
         [  # Long arguments
             'url=',
             'wordlist=',
@@ -42,7 +43,8 @@ try:
             'start-index=',
             'output=',
             'headers=',
-            'cookies='
+            'cookies=',
+            'proxy='
         ])
 # Catch errors from malformed input
 except getopt.GetoptError as err:
@@ -55,13 +57,17 @@ for opt, arg in options:
     if opt in ('-u', '--url'):
         url = arg
 
-    # Define URL
+    # Define Data to send
     elif opt in ('-d', '--data'):
         data = json.loads(str(arg).replace("'", '"'))
     
-    # Define URL
-    elif opt == '--cookies':
+    # Define Cookies to send
+    elif opt in ('-c', '--cookies'):
         COOKIES = json.loads(str(arg).replace("'", '"'))
+
+    # Define Data to send
+    elif opt in ('-p', '--proxy'):
+        data = str(arg)
 
     # Request limit
     elif opt in ('-l', '--limit'):
@@ -92,7 +98,7 @@ for opt, arg in options:
 
     # Output file
     elif opt == '--output':
-        output = str(arg)
+        output = arg
 
     # Return the help text
     elif opt in ('-h', '--help'):
@@ -146,7 +152,7 @@ for opt, arg in options:
 async def api(param):
     try:
         # make the request
-        async with method(url.replace('*F*', param), data=data, headers=HEADERS, cookies=COOKIES) as res:
+        async with method(url.replace('*F*', param), proxy=proxy, data=data, headers=HEADERS, cookies=COOKIES) as res:
             # Count variable acess and increment
             global i
             i += 1
