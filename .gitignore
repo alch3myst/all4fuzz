@@ -1,2 +1,6 @@
 .git/
 .vscode/
+build/
+all4fuzz.exe
+__pycache__/
+util/__pycache__/

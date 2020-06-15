@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import aiohttp
 import asyncio
 import warnings
@@ -16,21 +18,22 @@ warnings.filterwarnings('ignore')  # R.I.P anoyng warnings
 _limit = 10  # default rps
 _limit_per_host = 0  # default conections per host 0 = unlimited
 data = ''  # sintax "{'parameter': *F*}"
-HEADERS = '' # sintax "{'header': 'name'}"
-COOKIES = '' # sintax "{'cookie': 'value'}"
+HEADERS = ''  # sintax "{'header': 'name'}"
+COOKIES = ''  # sintax "{'cookie': 'value'}"
 err_message = '*all4fuzz love u :D´*'  # error displayed in request [wip]
 print_request = False  # print the request body, userfull for api fuzzing
 _status = 404  # Default request filter
 start_index = 0  # the wordlist start index
 proxy = None  # the wordlist start index
 output = False
+encoding = 'utf8'
 
 # Args definition
 try:
     # Define options u, w, h
     options, remainder = getopt.gnu_getopt(
         sys.argv[1:],  # terminal arguments
-        'u:w:l:L:f:hm:de:Ri:H:p:c:',  # Shotr options
+        'u:w:l:L:f:hm:de:Ri:H:p:c:E:',  # Shotr options
         [  # Long arguments
             'url=',
             'wordlist=',
@@ -44,7 +47,8 @@ try:
             'output=',
             'headers=',
             'cookies=',
-            'proxy='
+            'proxy=',
+            'encoding='
         ])
 # Catch errors from malformed input
 except getopt.GetoptError as err:
@@ -60,7 +64,11 @@ for opt, arg in options:
     # Define Data to send
     elif opt in ('-d', '--data'):
         data = json.loads(str(arg).replace("'", '"'))
-    
+
+    # Define Data to send
+    elif opt in ('-E', '--encoding'):
+        encoding = str(arg)
+
     # Define Cookies to send
     elif opt in ('-c', '--cookies'):
         COOKIES = json.loads(str(arg).replace("'", '"'))
@@ -112,7 +120,7 @@ for opt, arg in options:
     # Define wordlist path
     if opt in ('-w', '--wordlist'):
         # Create array from file
-        wordlist, wordlist_length = h.loadWordlist(arg, start_index)
+        wordlist, wordlist_length = h.loadWordlist(arg, start_index, encoding)
 
 # Init network stuff
 loop = asyncio.get_event_loop()  # create the main loop event
@@ -168,15 +176,19 @@ async def api(param):
 
             if res.status != _status and err_message not in r:
                 # print the requested url
-                print(template.format('# URL ', url.replace('*F*', param), ' Status  ' + str(res.status)))
+                print(template.format('# URL ', url.replace(
+                    '*F*', param), ' Status  ' + str(res.status)))
 
                 # if -R print the request body
-                print('- Response: ' + r + '  ') if print_request == True else False
+                print('- Response: ' + r +
+                      '  ') if print_request == True else False
 
                 # Open the output file
                 if output != False:
-                    out.write(template.format('# URL ', url.replace('*F*', param), ' Status  ' + str(res.status))+'\n')
-                    out.write('- Response: ' + r + '  \n') if print_request == True else False
+                    out.write(template.format('# URL ', url.replace(
+                        '*F*', param), ' Status  ' + str(res.status))+'\n')
+                    out.write('- Response: ' + r +
+                              '  \n') if print_request == True else False
 
             # print the current request and keep it in line, a little bit buggy :l
             sys.stdout.write('Trying: ' + '[' + str(i) + '/' + str(
@@ -187,7 +199,8 @@ async def api(param):
     except aiohttp.ClientConnectionError:
         pass
     except UnicodeError as e:
-        print('Last Index: ' + '[' + str(i) + '/' + str(wordlist_length) + '] ' + url.replace('*F*', param) + ' '*10 + '\r')
+        print('Last Index: ' + '[' + str(i) + '/' + str(wordlist_length) +
+              '] ' + url.replace('*F*', param) + ' '*10 + '\r')
         print(' Unicode error: label empty or too long')
         pass
     # Catch any other exception and print it
@@ -237,7 +250,3 @@ except KeyboardInterrupt:
     # Message for CRTL+C cancelation
     print('\n\nCTRL+C huummm\n')
     sys.exit(1)
-except:
-    print('Last Index: ' + '[' + str(i) + '/' + str(wordlist_length) + '] ' + url + ' '*10 + '\r')
-    print("Some other error")
-    sys.exit(9)
